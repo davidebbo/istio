@@ -321,6 +321,9 @@ var (
 	// K8SCoreV1Services is the name of collection k8s/core/v1/services
 	K8SCoreV1Services = collection.NewName("k8s/core/v1/services")
 
+	// K8SCoreV1Beta1Mutatingwebhookconfigurations is the name of collection k8s/core/v1beta1/mutatingwebhookconfigurations
+	K8SCoreV1Beta1Mutatingwebhookconfigurations = collection.NewName("k8s/core/v1beta1/mutatingwebhookconfigurations")
+
 	// K8SExtensionsV1Beta1Ingresses is the name of collection k8s/extensions/v1beta1/ingresses
 	K8SExtensionsV1Beta1Ingresses = collection.NewName("k8s/extensions/v1beta1/ingresses")
 
@@ -465,6 +468,7 @@ func CollectionNames() []collection.Name {
 		K8SCoreV1Nodes,
 		K8SCoreV1Pods,
 		K8SCoreV1Services,
+		K8SCoreV1Beta1Mutatingwebhookconfigurations,
 		K8SExtensionsV1Beta1Ingresses,
 		K8SNetworkingIstioIoV1Alpha3Destinationrules,
 		K8SNetworkingIstioIoV1Alpha3Envoyfilters,

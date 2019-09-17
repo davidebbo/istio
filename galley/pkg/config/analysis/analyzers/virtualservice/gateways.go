@@ -21,6 +21,8 @@ import (
 	"istio.io/istio/galley/pkg/config/analysis/msg"
 	"istio.io/istio/galley/pkg/config/processor/metadata"
 	"istio.io/istio/galley/pkg/config/resource"
+	"k8s.io/api/admissionregistration/v1beta1"
+	v1 "k8s.io/api/core/v1"
 )
 
 // GatewayAnalyzer checks the gateways associated with each virtual service
@@ -39,6 +41,16 @@ func (s *GatewayAnalyzer) Analyze(c analysis.Context) {
 		s.analyzeVirtualService(r, c)
 		return true
 	})
+
+	c.ForEach(metadata.K8SCoreV1Pods, func(r *resource.Entry) bool {
+		s.analyzePod(r, c)
+		return true
+	})
+
+	c.ForEach(metadata.K8SCoreV1Beta1Mutatingwebhookconfigurations, func(r *resource.Entry) bool {
+		s.analyzeMutatingwebhookconfiguration(r, c)
+		return true
+	})
 }
 
 func (s *GatewayAnalyzer) analyzeVirtualService(r *resource.Entry, c analysis.Context) {
@@ -48,6 +60,24 @@ func (s *GatewayAnalyzer) analyzeVirtualService(r *resource.Entry, c analysis.Co
 	for _, gwName := range vs.Gateways {
 		if !c.Exists(metadata.IstioNetworkingV1Alpha3Gateways, resource.NewName(ns, gwName)) {
 			c.Report(metadata.IstioNetworkingV1Alpha3Virtualservices, msg.NewReferencedResourceNotFound(r, "gateway", gwName))
+		}
+	}
+}
+
+func (s *GatewayAnalyzer) analyzePod(r *resource.Entry, c analysis.Context) {
+	pod := r.Item.(*v1.Pod)
+
+	if len(pod.Spec.InitContainers) == 1 {
+		c.Report(metadata.K8SCoreV1Pods, msg.NewInternalError(r, pod.Spec.InitContainers[0].Image))
+	}
+}
+
+func (s *GatewayAnalyzer) analyzeMutatingwebhookconfiguration(r *resource.Entry, c analysis.Context) {
+	hookConfig := r.Item.(*v1beta1.MutatingWebhookConfiguration)
+	if hookConfig.Name == "istio-sidecar-injector" {
+		matchLabels := hookConfig.Webhooks[0].NamespaceSelector.MatchLabels
+		for key := range matchLabels {
+			c.Report(metadata.K8SCoreV1Beta1Mutatingwebhookconfigurations, msg.NewInternalError(r, key+":"+matchLabels[key]))
 		}
 	}
 }

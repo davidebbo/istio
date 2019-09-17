@@ -147,6 +147,10 @@ collections:
     proto: "k8s.io.api.extensions.v1beta1.IngressSpec"
     protoPackage: "k8s.io/api/extensions/v1beta1"
 
+  - name: "k8s/core/v1beta1/mutatingwebhookconfigurations"
+    proto: "k8s.io.api.admissionregistration.v1beta1.mutatingwebhookconfigurations"
+    protoPackage: "k8s.io/api/admissionregistration/v1beta1"
+
   # Istio CRD collections
   - name: "k8s/authentication.istio.io/v1alpha1/meshpolicies"
     proto: "istio.authentication.v1alpha1.Policy"
@@ -519,6 +523,8 @@ snapshots:
       - "istio/security/v1beta1/authorizationpolicies"
       - "k8s/core/v1/namespaces"
       - "k8s/core/v1/services"
+      - "k8s/core/v1/pods"
+      - "k8s/core/v1beta1/mutatingwebhookconfigurations"
       # Legacy Mixer CRDs
       - "istio/config/v1alpha2/legacy/apikeys"
       - "istio/config/v1alpha2/legacy/authorizations"
@@ -589,6 +595,11 @@ sources:
       kind: "Pod"
       plural: "pods"
       version: "v1"
+
+    - collection: "k8s/core/v1beta1/mutatingwebhookconfigurations"
+      kind: "MutatingWebhookConfiguration"
+      plural: "mutatingwebhookconfigurations"
+      version: "v1beta1"
 
     - collection: "k8s/core/v1/endpoints"
       kind: "Endpoints"
@@ -986,6 +997,8 @@ transforms:
       "k8s/security.istio.io/v1beta1/authorizationpolicies": "istio/security/v1beta1/authorizationpolicies"
       "k8s/core/v1/namespaces": "k8s/core/v1/namespaces"
       "k8s/core/v1/services": "k8s/core/v1/services"
+      "k8s/core/v1/pods": "k8s/core/v1/pods"
+      "k8s/core/v1beta1/mutatingwebhookconfigurations": "k8s/core/v1beta1/mutatingwebhookconfigurations"
       "istio/mesh/v1alpha1/MeshConfig": "istio/mesh/v1alpha1/MeshConfig"
 
       # Legacy Mixer CRD mappings
