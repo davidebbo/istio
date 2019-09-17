@@ -74,5 +74,10 @@ func (s *GatewayAnalyzer) analyzePod(r *resource.Entry, c analysis.Context) {
 
 func (s *GatewayAnalyzer) analyzeMutatingwebhookconfiguration(r *resource.Entry, c analysis.Context) {
 	hookConfig := r.Item.(*v1beta1.MutatingWebhookConfiguration)
-	c.Report(metadata.K8SCoreV1Beta1Mutatingwebhookconfigurations, msg.NewInternalError(r, hookConfig.Name))
+	if hookConfig.Name == "istio-sidecar-injector" {
+		matchLabels := hookConfig.Webhooks[0].NamespaceSelector.MatchLabels
+		for key := range matchLabels {
+			c.Report(metadata.K8SCoreV1Beta1Mutatingwebhookconfigurations, msg.NewInternalError(r, key+":"+matchLabels[key]))
+		}
+	}
 }
