@@ -19,6 +19,7 @@ import (
 	"reflect"
 
 	"github.com/gogo/protobuf/proto"
+	admissionregistration "k8s.io/api/admissionregistration/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	v1beta12 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -137,6 +138,33 @@ func (p *Provider) initKnownAdapters() {
 			},
 			parseJSON: func(input []byte) (interface{}, error) {
 				out := &v1.Pod{}
+				if _, _, err := deserializer.Decode(input, nil, out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			isEqual:   resourceVersionsMatch,
+			isBuiltIn: true,
+		},
+
+		asTypesKey("", "MutatingWebhookConfiguration"): {
+			extractObject: defaultExtractObject,
+			extractResource: func(o interface{}) (proto.Message, error) {
+				if obj, ok := o.(*admissionregistration.MutatingWebhookConfiguration); ok {
+					return obj, nil
+				}
+				return nil, fmt.Errorf("unable to convert to v1beta1.MutatingWebhookConfiguration: %T", o)
+			},
+			newInformer: func() (cache.SharedIndexInformer, error) {
+				informer, err := p.sharedInformerFactory()
+				if err != nil {
+					return nil, err
+				}
+
+				return informer.Admissionregistration().V1beta1().MutatingWebhookConfigurations().Informer(), nil
+			},
+			parseJSON: func(input []byte) (interface{}, error) {
+				out := &admissionregistration.MutatingWebhookConfiguration{}
 				if _, _, err := deserializer.Decode(input, nil, out); err != nil {
 					return nil, err
 				}
